@@ -1,3 +1,5 @@
+#if USE_GPU
+
 /*
 * Copyright 2017-2018 NVIDIA Corporation.  All rights reserved.
 *
@@ -364,3 +366,5 @@ void ScaleYUV420(unsigned char *dpDstY, unsigned char* dpDstU, unsigned char* dp
 #ifdef __cuda_cuda_h__
 void ComputeCRC(uint8_t *pBuffer, uint32_t *crcValue, CUstream_st *outputCUStream);
 #endif
+
+#endif // USE_GPU

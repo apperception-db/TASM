@@ -1,3 +1,5 @@
+#if USE_GPU
+
 #pragma once
 #include <stdint.h>
 #include <cuda_runtime.h>
@@ -39,3 +41,5 @@ union RGBA64 {
         uint16_t r, g, b, a;
     } c;
 };
+
+#endif // USE_GPU

@@ -1,3 +1,5 @@
+#if USE_GPU
+
 #include "TransformToImage.h"
 
 #include <fstream>
@@ -50,3 +52,5 @@ std::optional<std::unique_ptr<std::vector<ImagePtr>>> TransformToImage::next() {
 }
 
 } // namespace tasm
+
+#endif // USE_GPU

@@ -4,8 +4,17 @@ cmake_minimum_required(VERSION 3.10)
 # Set the cmake Module path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
-enable_language(CUDA)
+message("USE_CPU = ${USE_CPU}")
+if (!${USE_CPU})
+    MESSAGE("not using cpu")
+else()
+  message("using cpu")
+endif()
+
+if (!${USE_CPU})
+  set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+  enable_language(CUDA)
+endif()
 
 # Set shared library suffix
 if(APPLE)
@@ -34,17 +43,24 @@ set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG -g3 -rdynamic -Wall -Wextra -Wno-unused-param
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -fvisibility=hidden -Wall  -Wextra -Wno-unused-parameter")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG -Wall -Wextra -Wno-unused-parameter")
 set(CMAKE_CXX_FLAGS_COVERAGE "-DDEBUG --coverage -g3 -Wall -Wextra -Wno-unused-parameter")
+if (!${USE_CPU})
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPU")
+endif()
 
-set(TASM_LIB_DEPENDENCIES ${TASM_LIB_DEPENDENCIES} nvcuvid dl pthread stdc++fs)
+set(TASM_LIB_DEPENDENCIES ${TASM_LIB_DEPENDENCIES} dl pthread stdc++fs)
 
-include(cmake/nvenc.cmake)
+if (!${USE_CPU})
+  set(TASM_LIB_DEPENDENCIES ${TASM_LIB_DEPENDENCIES} nvcuvid)
 
-find_package(CUDA 8.0 REQUIRED)
-# Using SYSTEM breaks building.
-include_directories(${CUDA_INCLUDE_DIRS})
-message("Cuda include: ${CUDA_INCLUDE_DIRS}")
-message("libs: ${CUDA_CUDA_LIBRARY}, ${CUDA_nvcuvenc_LIBRARY}")
-set(TASM_LIB_DEPENDENCIES ${TASM_LIB_DEPENDENCIES} ${CUDA_CUDA_LIBRARY} ${CUDA_nvcuvenc_LIBRARY} /usr/lib/x86_64-linux-gnu/libnvcuvid.so /usr/local/cuda-9.0/lib64/libnvToolsExt.so)
+  include(cmake/nvenc.cmake)
+
+  find_package(CUDA 8.0 REQUIRED)
+  # Using SYSTEM breaks building.
+  include_directories(${CUDA_INCLUDE_DIRS})
+  message("Cuda include: ${CUDA_INCLUDE_DIRS}")
+  message("libs: ${CUDA_CUDA_LIBRARY}, ${CUDA_nvcuvenc_LIBRARY}")
+  set(TASM_LIB_DEPENDENCIES ${TASM_LIB_DEPENDENCIES} ${CUDA_CUDA_LIBRARY} ${CUDA_nvcuvenc_LIBRARY} /usr/lib/x86_64-linux-gnu/libnvcuvid.so /usr/local/cuda-9.0/lib64/libnvToolsExt.so)
+endif() # !use_cpu
 
 find_package(PythonLibs 3)
 include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
@@ -82,7 +98,7 @@ add_subdirectory(python)
 enable_testing()
 add_subdirectory(tasm-test)
 
-# Add clang-format target
+# Add clang-format targetc
 file(GLOB_RECURSE FORMATTED_SOURCE_FILES *.cc *.h)
 add_custom_target(
   clang-format

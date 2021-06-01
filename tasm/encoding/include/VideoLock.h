@@ -1,6 +1,8 @@
 #ifndef TASM_VIDEOLOCK_H
 #define TASM_VIDEOLOCK_H
 
+#if USE_GPU
+
 #include "GPUContext.h"
 
 #include <cassert>
@@ -48,5 +50,7 @@ private:
     std::shared_ptr<GPUContext> context_;
     CUvideoctxlock lock_ = nullptr;
 };
+
+#endif // USE_GPU
 
 #endif //TASM_VIDEOLOCK_H

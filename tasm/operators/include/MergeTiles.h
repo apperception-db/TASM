@@ -1,6 +1,8 @@
 #ifndef TASM_MERGETILES_H
 #define TASM_MERGETILES_H
 
+#if USE_GPU
+
 #include "Operator.h"
 
 #include "DecodedPixelData.h"
@@ -64,5 +66,7 @@ private:
 };
 
 } // namespace tasm
+
+#endif // USE_GPU
 
 #endif //TASM_MERGETILES_H

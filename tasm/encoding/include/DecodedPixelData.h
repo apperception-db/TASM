@@ -1,6 +1,8 @@
 #ifndef TASM_DECODEDPIXELDATA_H
 #define TASM_DECODEDPIXELDATA_H
 
+#if USE_GPU
+
 #include "EncodedData.h"
 
 namespace tasm {
@@ -48,5 +50,7 @@ private:
 };
 
 } // namespace tasm
+
+#endif // USE_GPU
 
 #endif //TASM_DECODEDPIXELDATA_H

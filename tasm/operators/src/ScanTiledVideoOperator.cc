@@ -1,3 +1,5 @@
+#if USE_GPU
+
 #include "ScanTiledVideoOperator.h"
 
 #include "VideoConfiguration.h"
@@ -295,3 +297,5 @@ std::unique_ptr<Configuration> ScanFullFramesFromTiledVideoOperator::fullFrameCo
 }
 
 } // namespace tasm
+
+#endif // USE_GPU

@@ -1,3 +1,5 @@
+#if USE_GPU
+
 #include "EncodeAPI.h"
 #include "EncodeBuffer.h"
 #include <gtest/gtest.h>
@@ -1411,3 +1413,5 @@ NVENCSTATUS EncodeAPI::NvEncFlushEncoderQueue(void *hEOSEvent)
     }
     return nvStatus;
 }
+
+#endif // USE_GPU

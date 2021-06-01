@@ -1,6 +1,8 @@
 #ifndef TASM_VIDEODECODERSESSION_H
 #define TASM_VIDEODECODERSESSION_H
 
+#if USE_GPU
+
 #include "EncodedData.h"
 #include "DecodeReader.h"
 #include "Frame.h"
@@ -232,5 +234,7 @@ private:
 };
 
 } // namespace tasm
+
+#endif // USE_GPU
 
 #endif //TASM_VIDEODECODERSESSION_H

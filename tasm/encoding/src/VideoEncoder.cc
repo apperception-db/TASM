@@ -1,3 +1,5 @@
+#if USE_GPU
+
 #include "VideoEncoder.h"
 
 #include "EncodeBuffer.h"
@@ -10,3 +12,5 @@ std::vector<std::shared_ptr<EncodeBuffer>> VideoEncoder::CreateBuffers(const siz
                     [this]() { return std::make_shared<EncodeBuffer>(*this); });
     return buffers;
 }
+
+#endif // USE_GPU

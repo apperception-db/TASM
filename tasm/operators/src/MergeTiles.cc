@@ -1,3 +1,5 @@
+#if USE_GPU
+
 #include "MergeTiles.h"
 
 #include "ColorSpace.h"
@@ -97,3 +99,5 @@ std::optional<GPUPixelDataContainer> TilesToPixelsOperator::next() {
 }
 
 } // namespace tasm
+
+#endif // USE_GPU

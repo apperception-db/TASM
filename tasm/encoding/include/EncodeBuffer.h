@@ -1,6 +1,8 @@
 #ifndef TASM_ENCODEBUFFER_H
 #define TASM_ENCODEBUFFER_H
 
+#if USE_GPU
+
 #include "Configuration.h"
 #include "Frame.h"
 #include "VideoEncoder.h"
@@ -218,5 +220,7 @@ struct MotionEstimationBuffer
     unsigned int            inputFrameIndex;
     unsigned int            referenceFrameIndex;
 };
+
+#endif // USE_GPU
 
 #endif //TASM_ENCODEBUFFER_H

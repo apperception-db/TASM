@@ -1,6 +1,8 @@
 #ifndef TASM_GPUCONTEXT_H
 #define TASM_GPUCONTEXT_H
 
+#if USE_GPU
+
 #include <cuda.h>
 #include "nvcuvid.h"
 
@@ -80,5 +82,7 @@ private:
     CUdevice device_;
     CUcontext context_ = nullptr;
 };
+
+#endif // USE_GPU
 
 #endif //TASM_GPUCONTEXT_H

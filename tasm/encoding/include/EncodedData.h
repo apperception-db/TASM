@@ -1,6 +1,8 @@
 #ifndef TASM_ENCODEDDATA_H
 #define TASM_ENCODEDDATA_H
 
+#if USE_GPU
+
 #include "Configuration.h"
 #include "DecodeReader.h"
 #include "Frame.h"
@@ -86,5 +88,7 @@ private:
 };
 
 } // namespace tasm
+
+#endif // USE_GPU
 
 #endif //TASM_ENCODEDDATA_H

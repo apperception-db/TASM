@@ -1,3 +1,5 @@
+#if USE_GPU
+
 #include "VideoDecoder.h"
 #include "cuviddec.h"
 #include "Configuration.h"
@@ -253,3 +255,5 @@ VideoDecoder::DecodedDimensions VideoDecoder::decodedDimensionsForPicIndex(unsig
             format.coded_width,
             format.coded_height};
 }
+
+#endif // USE_GPU

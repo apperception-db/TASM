@@ -1,6 +1,8 @@
 #ifndef TASM_VIDEOENCODER_H
 #define TASM_VIDEOENCODER_H
 
+#if USE_GPU
+
 #include "Configuration.h"
 #include "EncodeAPI.h"
 #include "VideoLock.h"
@@ -74,5 +76,7 @@ private:
 private:
     std::vector<std::shared_ptr<EncodeBuffer>> CreateBuffers(size_t size);
 };
+
+#endif // USE_GPU
 
 #endif //TASM_VIDEOENCODER_H

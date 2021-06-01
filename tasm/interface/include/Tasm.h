@@ -33,6 +33,7 @@ public:
 
     virtual void addBulkMetadata(const std::vector<MetadataInfo>&);
 
+#if USE_GPU
     virtual void store(const std::string &videoPath, const std::string &savedName) {
         videoManager_.store(videoPath, savedName);
     }
@@ -100,6 +101,7 @@ public:
     void deactivateRegretBasedTilingForVideo(const std::string &video) {
         videoManager_.deactivateRegretBasedRetilingForVideo(video);
     }
+#endif // USE_GPU
 
     virtual ~TASM() = default;
 
@@ -108,6 +110,7 @@ public:
     }
 
 private:
+#if USE_GPU
     std::unique_ptr<ImageIterator> select(const std::string &video, const std::string &label, std::shared_ptr<TemporalSelection> temporalSelection, const std::string &metadataIdentifier, SelectStrategy strategy=SelectStrategy::Objects) {
         return videoManager_.select(
                 video,
@@ -117,6 +120,7 @@ private:
                 semanticIndex_,
                 strategy);
     }
+#endif // USE_GPU
 
     std::shared_ptr<SemanticIndex> semanticIndex_;
     VideoManager videoManager_;

@@ -1,10 +1,16 @@
 #ifndef TASM_FRAME_H
 #define TASM_FRAME_H
 
+#include "Configuration.h"
 #include "nvEncodeAPI.h"
 #include "VideoDecoder.h"
 #include "VideoLock.h"
 #include <iostream>
+#include <optional>
+
+#if !USE_GPU
+#define NV_ENC_PIC_STRUCT int
+#endif
 
 class Frame {
 public:
@@ -51,6 +57,7 @@ protected:
     std::optional<int> frameNumber_;
 };
 
+#if USE_GPU
 class CudaFrame;
 
 class GPUFrame : public Frame {
@@ -320,5 +327,7 @@ private:
         return frame.decoder().frameInfoForPicIndex(frame.parameters().picture_index);
     }
 };
+
+#endif // USE_GPU
 
 #endif //TASM_FRAME_H

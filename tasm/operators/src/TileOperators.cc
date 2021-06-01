@@ -1,3 +1,5 @@
+#if USE_GPU
+
 #include "TileOperators.h"
 
 #include "EncodeAPI.h"
@@ -96,3 +98,5 @@ void TileOperator::encodeFrameToTiles(GPUFramePtr frame, int frameNumber) {
 
 
 } // namespace tasm
+
+#endif // USE_GPU

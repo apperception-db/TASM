@@ -1,6 +1,8 @@
 #ifndef TASM_ENCODEAPI_H
 #define TASM_ENCODEAPI_H
 
+#if USE_GPU
+
 #include "nvEncodeAPI.h"
 #include <cuda.h>
 #include <cassert>
@@ -188,5 +190,7 @@ protected:
 };
 
 typedef NVENCSTATUS (NVENCAPI *MYPROC)(NV_ENCODE_API_FUNCTION_LIST*);
+
+#endif // USE_GPU
 
 #endif //TASM_ENCODEAPI_H

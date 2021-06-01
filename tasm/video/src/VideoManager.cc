@@ -25,6 +25,7 @@ void VideoManager::createCatalogIfNecessary() {
         std::experimental::filesystem::create_directory(CatalogConfiguration::CatalogPath());
 }
 
+#if USE_GPU
 void VideoManager::store(const std::experimental::filesystem::path &path, const std::string &name) {
     std::shared_ptr<Video> video(new Video(path));
     auto tileConfigurationProvider = std::make_shared<SingleTileConfigurationProvider>(
@@ -207,5 +208,6 @@ void VideoManager::activateRegretBasedRetilingForVideo(const std::string &video,
 void VideoManager::deactivateRegretBasedRetilingForVideo(const std::string &video) {
     videoToRegretAccumulator_.erase(video);
 }
+#endif // USE_GPU
 
 } // namespace tasm

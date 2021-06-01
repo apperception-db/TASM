@@ -1,6 +1,8 @@
 #ifndef TASM_SCANOPERATORS_H
 #define TASM_SCANOPERATORS_H
 
+#if USE_GPU
+
 #include "Operator.h"
 
 #include "DecodeReader.h"
@@ -78,5 +80,6 @@ private:
 
 } // namespace tasm
 
+#endif // USE_GPU
 
 #endif //TASM_SCANOPERATORS_H

@@ -1,6 +1,8 @@
 #ifndef TASM_VIDEOENCODERSESSION_H
 #define TASM_VIDEOENCODERSESSION_H
 
+#if USE_GPU
+
 #include "Frame.h"
 #include "VideoEncoder.h"
 #include "EncodeAPI.h"
@@ -148,5 +150,7 @@ private:
 };
 
 } // namespace tasm
+
+#endif // USE_GPU
 
 #endif //TASM_VIDEOENCODERSESSION_H

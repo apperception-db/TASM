@@ -10,6 +10,7 @@
 namespace p = boost::python;
 namespace np = boost::python::numpy;
 
+#if USE_GPU
 tasm::python::SelectionResults (tasm::python::PythonTASM::*selectRange)(const std::string&, const std::string&, unsigned int, unsigned int) = &tasm::python::PythonTASM::pythonSelect;
 tasm::python::SelectionResults (tasm::python::PythonTASM::*selectEqual)(const std::string&, const std::string&, unsigned int) = &tasm::python::PythonTASM::pythonSelect;
 tasm::python::SelectionResults (tasm::python::PythonTASM::*selectAll)(const std::string&, const std::string&) = &tasm::python::PythonTASM::pythonSelect;
@@ -25,6 +26,7 @@ void (tasm::python::PythonTASM::*storeDoNotForceNonUniformLayout)(const std::str
 void (tasm::python::PythonTASM::*activateRegretBasedTilingWithoutMetadataIdentifier)(const std::string&) = &tasm::python::PythonTASM::pythonActivateRegretBasedTilingForVideo;
 void (tasm::python::PythonTASM::*activateRegretBasedTilingWithMetadataIdentifier)(const std::string&, const std::string&) = &tasm::python::PythonTASM::pythonActivateRegretBasedTilingForVideo;
 void (tasm::python::PythonTASM::*activateRegretBasedTilingWithThreshold)(const std::string&, const std::string&, double) = &tasm::python::PythonTASM::pythonActivateRegretBasedTilingForVideo;
+#endif // USE_GPU
 
 BOOST_PYTHON_MODULE(_tasm) {
     using namespace boost::python;
@@ -38,8 +40,10 @@ BOOST_PYTHON_MODULE(_tasm) {
             .def("height", &tasm::python::PythonImage::height)
             .def("array", &tasm::python::PythonImage::array);
 
-    class_<tasm::python::SelectionResults>("ObjectIterator", no_init)
+#if USE_GPU
+        class_<tasm::python::SelectionResults>("ObjectIterator", no_init)
             .def("next", &tasm::python::SelectionResults::next);
+#endif // USE_GPU
 
     class_<tasm::MetadataInfo>("MetadataInfo", init<std::string, std::string, unsigned int, unsigned int, unsigned int, unsigned int, unsigned int>())
             .def_readonly("video", &tasm::MetadataInfo::video)
@@ -65,6 +69,7 @@ BOOST_PYTHON_MODULE(_tasm) {
         .def(init<tasm::SemanticIndex::IndexType, optional<std::string>>())
         .def("add_metadata", &tasm::python::PythonTASM::addMetadata)
         .def("add_bulk_metadata", &tasm::python::PythonTASM::addBulkMetadataFromList)
+#if USE_GPU
         .def("store", &tasm::python::PythonTASM::store)
         .def("store_with_uniform_layout", &tasm::python::PythonTASM::storeWithUniformLayout)
         .def("store_with_nonuniform_layout", storeForceNonUniformLayout)
@@ -83,7 +88,9 @@ BOOST_PYTHON_MODULE(_tasm) {
         .def("activate_regret_based_tiling", activateRegretBasedTilingWithoutMetadataIdentifier)
         .def("activate_regret_based_tiling", activateRegretBasedTilingWithThreshold)
         .def("deactivate_regret_based_tiling", &tasm::python::PythonTASM::deactivateRegretBasedTilingForVideo)
-        .def("retile_based_on_regret", &tasm::python::PythonTASM::retileVideoBasedOnRegret);
+        .def("retile_based_on_regret", &tasm::python::PythonTASM::retileVideoBasedOnRegret)
+#endif // USE_GPU
+        ;
 
     class_<tasm::python::Query>("Query", init<std::string, std::string, unsigned int, unsigned int>())
         .def(init<std::string, std::string>())

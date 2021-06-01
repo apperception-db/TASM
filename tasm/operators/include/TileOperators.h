@@ -1,6 +1,8 @@
 #ifndef TASM_TILEOPERATORS_H
 #define TASM_TILEOPERATORS_H
 
+#if USE_GPU
+
 #include "EncodedData.h"
 #include "Files.h"
 #include "MultipleEncoderManager.h"
@@ -57,5 +59,7 @@ private:
 };
 
 } // namespace tasm
+
+#endif // USE_GPU
 
 #endif //TASM_TILEOPERATORS_H

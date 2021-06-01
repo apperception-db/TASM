@@ -2,6 +2,7 @@
 #define TASM_FILES_H
 
 #include "Video.h"
+#include <cassert>
 
 namespace tasm {
 

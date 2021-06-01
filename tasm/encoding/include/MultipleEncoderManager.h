@@ -1,6 +1,8 @@
 #ifndef TASM_MULTIPLEENCODERMANAGER_H
 #define TASM_MULTIPLEENCODERMANAGER_H
 
+#if USE_GPU
+
 #include "EncodeWriter.h"
 #include "VideoEncoder.h"
 #include "VideoEncoderSession.h"
@@ -86,5 +88,7 @@ private:
 };
 
 } // namespace tasm
+
+#endif // USE_GPU
 
 #endif //TASM_MULTIPLEENCODERMANAGER_H

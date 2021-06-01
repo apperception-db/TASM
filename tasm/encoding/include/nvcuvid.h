@@ -1,3 +1,5 @@
+#if USE_GPU
+
 /*
  * This copyright notice applies to this header file only:
  *
@@ -382,4 +384,4 @@ CUresult CUDAAPI cuvidDestroyVideoParser(CUvideoparser obj);
 
 #endif // __NVCUVID_H__
 
-
+#endif // USE_GPU

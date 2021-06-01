@@ -1,6 +1,8 @@
 #ifndef TASM_VIDEODECODER_H
 #define TASM_VIDEODECODER_H
 
+#if USE_GPU
+
 #include "Configuration.h"
 #include "GPUContext.h"
 #include "VideoLock.h"
@@ -119,5 +121,7 @@ private:
     };
     mutable std::unordered_map<unsigned int, DecodedFrameInformation> picIndexToMappedFrameInfo_;
 };
+
+#endif // USE_GPU
 
 #endif //TASM_VIDEODECODER_H

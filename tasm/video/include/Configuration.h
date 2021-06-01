@@ -44,6 +44,7 @@ struct Configuration {
     Configuration() = default;
 };
 
+#if USE_GPU
 struct EncodeConfiguration: public Configuration
 {
     EncodeCodec               codec;
@@ -163,5 +164,7 @@ struct EncodeConfiguration: public Configuration
             flags{false, false, false, false}
     { }
 };
+
+#endif // USE_GPU
 
 #endif //TASM_CONFIGURATION_H

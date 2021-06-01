@@ -1,6 +1,8 @@
 #ifndef TASM_DECODEREADER_H
 #define TASM_DECODEREADER_H
 
+#if USE_GPU
+
 #include "GPUContext.h"
 #include "MP4Reader.h"
 #include "spsc_queue.h"
@@ -397,5 +399,6 @@ private:
     bool shouldReadEntireGOPs_;
 };
 
+#endif // USE_GPU
 
 #endif //TASM_DECODEREADER_H

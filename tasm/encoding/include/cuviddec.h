@@ -1,3 +1,5 @@
+#if USE_GPU
+
 /*
  * This copyright notice applies to this header file only:
  *
@@ -999,3 +1001,4 @@ public:
 
 #endif // __CUDA_VIDEO_H__
 
+#endif // USE_GPU

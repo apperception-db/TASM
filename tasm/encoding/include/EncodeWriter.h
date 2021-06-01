@@ -1,6 +1,8 @@
 #ifndef TASM_ENCODEWRITER_H
 #define TASM_ENCODEWRITER_H
 
+#if USE_GPU
+
 #include "VideoEncoder.h"
 #include "EncodeBuffer.h"
 #include <system_error>
@@ -162,5 +164,7 @@ private:
 };
 
 } // namespace tasm
+
+#endif // USE_GPU
 
 #endif //TASM_ENCODEWRITER_H

@@ -12,6 +12,7 @@ namespace p = boost::python;
 namespace np = boost::python::numpy;
 
 namespace tasm::python {
+
 class PythonImage {
 public:
     PythonImage(ImagePtr image)
@@ -35,6 +36,7 @@ private:
     p::object own_;
 };
 
+#if USE_GPU
 class SelectionResults {
 public:
     SelectionResults(std::unique_ptr<ImageIterator> imageIterator)
@@ -47,6 +49,7 @@ public:
 private:
     std::shared_ptr<ImageIterator> imageIterator_;
 };
+#endif // USE_GPU
 
 class PythonTASM : public TASM {
 public:
@@ -62,6 +65,7 @@ public:
         addBulkMetadata(extract<MetadataInfo>(metadataInfo));
     }
 
+#if USE_GPU
     void pythonStoreWithNonUniformLayout(const std::string &videoPath, const std::string &savedName, const std::string &metadataIdentifier, const std::string &labelToTileAround) {
         // If "force" isn't specified, do the tiling.
         storeWithNonUniformLayout(videoPath, savedName, metadataIdentifier, labelToTileAround, true);
@@ -152,7 +156,7 @@ public:
                                                  double threshold) {
         return activateRegretBasedTilingForVideo(video, metadataIdentifier, threshold);
     }
-
+#endif // USE_GPU
 };
 
 PythonTASM *tasmFromWH(const std::string &whDBPath) {

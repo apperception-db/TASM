@@ -1,3 +1,5 @@
+#if USE_GPU
+
 #include "MultipleEncoderManager.h"
 
 namespace tasm {
@@ -26,3 +28,5 @@ void TileEncoder::flush() {
 }
 
 } // namespace tasm
+
+#endif // USE_GPU

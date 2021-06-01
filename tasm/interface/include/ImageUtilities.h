@@ -1,6 +1,7 @@
 #ifndef TASM_IMAGEITERATOR_H
 #define TASM_IMAGEITERATOR_H
 
+
 #include "Operator.h"
 
 #include <memory>
@@ -22,6 +23,8 @@ private:
     std::unique_ptr<PixelPtr> pixels_;
 };
 using ImagePtr = std::shared_ptr<Image>;
+
+#if USE_GPU
 
 class ImageIterator {
 public:
@@ -56,5 +59,7 @@ private:
     std::unique_ptr<std::vector<ImagePtr>> currentImages_;
     std::vector<ImagePtr>::const_iterator imageIterator_;
 };
+
+#endif // USE_GPU
 
 #endif //TASM_IMAGEITERATOR_H
