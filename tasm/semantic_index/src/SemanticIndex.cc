@@ -127,7 +127,7 @@ std::unique_ptr<std::list<Rectangle>> SemanticIndexSQLite::rectanglesForFrame(co
 }
 
 std::unique_ptr<std::list<Rectangle>> SemanticIndexSQLite::rectanglesForFrames(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, int firstFrameInclusive, int lastFrameExclusive) {
-    std::string query = "SELECT frame, x1, y1, x2, y2 FROM labels WHERE video = ? AND " + metadataSelection->labelConstraints() + " AND frame >= ? AND frame < ?";
+    std::string query = "SELECT frame, x1, y1, x2, y2 FROM labels WHERE video = ? AND " + metadataSelection->labelConstraints() + " AND frame >= ? AND frame < ? ORDER BY frame";
     sqlite3_stmt *select;
     ASSERT_SQLITE_OK(sqlite3_prepare_v2(db_, query.c_str(), query.length(), &select, nullptr));
     ASSERT_SQLITE_OK(sqlite3_bind_text(select, 1, video.c_str(), -1, SQLITE_STATIC));
@@ -160,6 +160,30 @@ std::unique_ptr<std::list<Rectangle>> SemanticIndexSQLite::rectanglesForQuery(sq
     ASSERT_SQLITE_OK(sqlite3_finalize(select));
 
     return rectangles;
+}
+
+std::pair<unsigned int, unsigned int> SemanticIndexSQLite::maximumWidthAndHeightOfRectangles(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, std::shared_ptr<TemporalSelection> temporalSelection) {
+    std::string query = "SELECT MAX(x2-x1), MAX(y2-y1) FROM labels WHERE video = ? AND " + metadataSelection->labelConstraints();
+    if (temporalSelection)
+        query += " AND " + temporalSelection->frameConstraints();
+    sqlite3_stmt *select;
+    ASSERT_SQLITE_OK(sqlite3_prepare_v2(db_, query.c_str(), query.length(), &select, nullptr));
+    ASSERT_SQLITE_OK(sqlite3_bind_text(select, 1, video.c_str(), -1, SQLITE_STATIC));
+
+    std::pair<unsigned int, unsigned int> widthHeight;
+    bool done = false;
+    int result;
+    while ((result = sqlite3_step(select)) == SQLITE_ROW) {
+        assert(!done);
+        done = true;
+        widthHeight = std::make_pair(sqlite3_column_int(select, 0), sqlite3_column_int(select, 1));
+    }
+    ASSERT_SQLITE_DONE(result);
+    ASSERT_SQLITE_OK(sqlite3_finalize(select));
+
+    std::cout << "maxWidth: " << widthHeight.first << ", maxHeight: " << widthHeight.second << std::endl;
+
+    return widthHeight;
 }
 
 void SemanticIndexWH::openDatabase(const std::experimental::filesystem::path &dbPath) {
@@ -282,6 +306,28 @@ std::unique_ptr<std::list<Rectangle>> SemanticIndexWH::rectanglesForQuery(sqlite
     ASSERT_SQLITE_OK(sqlite3_finalize(select));
 
     return rectangles;
+}
+
+std::pair<unsigned int, unsigned int> SemanticIndexWH::maximumWidthAndHeightOfRectangles(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, std::shared_ptr<TemporalSelection> temporalSelection) {
+    std::string query = "SELECT MAX(w), MAX(h) FROM labels WHERE " + metadataSelection->labelConstraints();
+    if (temporalSelection)
+        query += " AND " + temporalSelection->frameConstraints();
+    sqlite3_stmt *select;
+    ASSERT_SQLITE_OK(sqlite3_prepare_v2(db_, query.c_str(), query.length(), &select, nullptr));
+    ASSERT_SQLITE_OK(sqlite3_bind_text(select, 1, video.c_str(), -1, SQLITE_STATIC));
+
+    std::pair<unsigned int, unsigned int> widthHeight;
+    bool done = false;
+    int result;
+    while ((result = sqlite3_step(select)) == SQLITE_ROW) {
+        assert(!done);
+        done = true;
+        widthHeight = std::make_pair(sqlite3_column_int(select, 0), sqlite3_column_int(select, 1));
+    }
+    ASSERT_SQLITE_DONE(result);
+    ASSERT_SQLITE_OK(sqlite3_finalize(select));
+
+    return widthHeight;
 }
 
 } // namespace tasm

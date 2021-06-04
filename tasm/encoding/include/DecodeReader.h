@@ -1,8 +1,6 @@
 #ifndef TASM_DECODEREADER_H
 #define TASM_DECODEREADER_H
 
-#if USE_GPU
-
 #include "GPUContext.h"
 #include "MP4Reader.h"
 #include "spsc_queue.h"
@@ -15,6 +13,7 @@
 #include <thread>
 #include <vector>
 
+#if USE_GPU
 struct DecodeReaderPacket: public CUVIDSOURCEDATAPACKET {
 public:
     DecodeReaderPacket() : CUVIDSOURCEDATAPACKET{} { }
@@ -46,6 +45,31 @@ public:
 private:
     std::shared_ptr<std::vector<unsigned char>> buffer_;
 };
+#else
+struct DecodeReaderPacket {
+public:
+    unsigned long payload_size;
+    const unsigned char *payload;
+
+    DecodeReaderPacket(const DecodeReaderPacket &packet) = default;
+
+    explicit DecodeReaderPacket(const std::vector<char> &data, const unsigned long flags=0) {
+        payload = reinterpret_cast<const unsigned char*>(data.data());
+        payload_size = data.size();
+        buffer_->reserve(payload_size);
+        buffer_->insert(buffer_->begin(), payload, payload + payload_size);
+        payload = buffer_->data();
+    }
+
+    DecodeReaderPacket& operator=(const DecodeReaderPacket &packet) = default;
+    bool operator==(const DecodeReaderPacket &packet) const noexcept {
+        return this->buffer_ == packet.buffer_;
+    }
+
+private:
+    std::shared_ptr<std::vector<unsigned char>> buffer_;
+};
+#endif // not USE_GPU
 
 class DecodeReader {
 public:
@@ -90,9 +114,14 @@ public:
     virtual iterator end() { return iterator(); }
 
     virtual std::optional<DecodeReaderPacket> read() = 0;
+
+#if USE_GPU
     virtual CUVIDEOFORMAT format() const = 0;
+#endif // USE_GPU
     virtual bool isComplete() const = 0;
 };
+
+#if USE_GPU
 
 class FileDecodeReader: public DecodeReader {
 public:
@@ -213,6 +242,8 @@ private:
     CUVIDEOFORMAT format_;
     size_t decoded_bytes_;
 };
+
+#endif // USE_GPU
 
 struct GOPReaderPacket {
 public:
@@ -398,7 +429,5 @@ private:
     int frameOffsetInFile_;
     bool shouldReadEntireGOPs_;
 };
-
-#endif // USE_GPU
 
 #endif //TASM_DECODEREADER_H

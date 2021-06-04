@@ -10,6 +10,8 @@
 namespace p = boost::python;
 namespace np = boost::python::numpy;
 
+void export_EncodedTileInformation();
+
 #if USE_GPU
 tasm::python::SelectionResults (tasm::python::PythonTASM::*selectRange)(const std::string&, const std::string&, unsigned int, unsigned int) = &tasm::python::PythonTASM::pythonSelect;
 tasm::python::SelectionResults (tasm::python::PythonTASM::*selectEqual)(const std::string&, const std::string&, unsigned int) = &tasm::python::PythonTASM::pythonSelect;
@@ -33,6 +35,8 @@ BOOST_PYTHON_MODULE(_tasm) {
 
     Py_Initialize();
     np::initialize();
+
+    export_EncodedTileInformation();
 
     class_<tasm::python::PythonImage>("Image", no_init)
             .def("is_empty", &tasm::python::PythonImage::isEmpty)
@@ -69,6 +73,7 @@ BOOST_PYTHON_MODULE(_tasm) {
         .def(init<tasm::SemanticIndex::IndexType, optional<std::string>>())
         .def("add_metadata", &tasm::python::PythonTASM::addMetadata)
         .def("add_bulk_metadata", &tasm::python::PythonTASM::addBulkMetadataFromList)
+        .def("select_encoded", &tasm::python::PythonTASM::pythonSelectEncoded)
 #if USE_GPU
         .def("store", &tasm::python::PythonTASM::store)
         .def("store_with_uniform_layout", &tasm::python::PythonTASM::storeWithUniformLayout)

@@ -1,8 +1,6 @@
 #ifndef TASM_ENCODEDDATA_H
 #define TASM_ENCODEDDATA_H
 
-#if USE_GPU
-
 #include "Configuration.h"
 #include "DecodeReader.h"
 #include "Frame.h"
@@ -69,6 +67,8 @@ private:
 
 using CPUEncodedFrameDataPtr = std::shared_ptr<CPUEncodedFrameData>;
 
+#if USE_GPU
+
 using GPUFramePtr = std::shared_ptr<DecodedFrame>;
 class GPUDecodedFrameData {
 public:
@@ -87,8 +87,8 @@ private:
     std::unique_ptr<std::vector<GPUFramePtr>> frames_;
 };
 
-} // namespace tasm
-
 #endif // USE_GPU
+
+} // namespace tasm
 
 #endif //TASM_ENCODEDDATA_H

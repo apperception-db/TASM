@@ -44,6 +44,10 @@ public:
         return index_->rectanglesForFrames(video_, metadataSelection_, firstFrameInclusive, lastFrameExclusive);
     }
 
+    std::pair<unsigned int, unsigned int> maximumWidthAndHeightOfRectangles() {
+        return index_->maximumWidthAndHeightOfRectangles(video_, metadataSelection_, temporalSelection_);
+    }
+
     const std::vector<std::string> &labelsInQuery() const { return metadataSelection_->objects(); }
 
 private:

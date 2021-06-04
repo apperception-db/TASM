@@ -62,6 +62,8 @@ public:
             int firstFrameInclusive,
             int lastFrameExclusive) = 0;
 
+    virtual std::pair<unsigned int, unsigned int> maximumWidthAndHeightOfRectangles(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, std::shared_ptr<TemporalSelection> temporalSelection) = 0;
+
     virtual ~SemanticIndex() {}
 };
 
@@ -112,6 +114,8 @@ public:
     std::unique_ptr<std::list<Rectangle>> rectanglesForFrame(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, int frame, unsigned int maxWidth = 0, unsigned int maxHeight = 0) override;
     std::unique_ptr<std::list<Rectangle>> rectanglesForFrames(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, int firstFrameInclusive, int lastFrameExclusive) override;
 
+    std::pair<unsigned int, unsigned int> maximumWidthAndHeightOfRectangles(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, std::shared_ptr<TemporalSelection> temporalSelection) override;
+
     ~SemanticIndexSQLite() {
         destroyStatements();
         closeDatabase();
@@ -158,6 +162,8 @@ public:
 
     std::unique_ptr<std::list<Rectangle>> rectanglesForFrame(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, int frame, unsigned int maxWidth = 0, unsigned int maxHeight = 0) override;
     std::unique_ptr<std::list<Rectangle>> rectanglesForFrames(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, int firstFrameInclusive, int lastFrameExclusive) override;
+
+    std::pair<unsigned int, unsigned int> maximumWidthAndHeightOfRectangles(const std::string &video, std::shared_ptr<MetadataSelection> metadataSelection, std::shared_ptr<TemporalSelection> temporalSelection) override;
 
     ~SemanticIndexWH() {
         destroyStatements();

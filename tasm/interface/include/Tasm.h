@@ -33,6 +33,21 @@ public:
 
     virtual void addBulkMetadata(const std::vector<MetadataInfo>&);
 
+    std::unique_ptr<EncodedTileInformation> selectEncoded(
+            const std::string &video,
+            const std::string &label,
+            unsigned int firstFrameInclusive,
+            unsigned int lastFrameExclusive,
+            const std::string &metadataIdentifier = "") {
+        return videoManager_.selectEncoded(
+                video,
+                metadataIdentifier.length() ? metadataIdentifier : video,
+                std::make_shared<SingleMetadataSelection>(label),
+                std::make_shared<RangeTemporalSelection>(firstFrameInclusive, lastFrameExclusive),
+                semanticIndex_,
+                SelectStrategy::Objects);
+    }
+
 #if USE_GPU
     virtual void store(const std::string &videoPath, const std::string &savedName) {
         videoManager_.store(videoPath, savedName);

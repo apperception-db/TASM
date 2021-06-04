@@ -7,9 +7,12 @@
 #include "ScanOperators.h"
 #include "ScanTiledVideoOperator.h"
 #include "DecodeOperators.h"
+#include "EncodedData.h"
+#include "SemanticDataManager.h"
 #include "SemanticIndex.h"
 #include "SemanticSelection.h"
 #include "SmartTileConfigurationProvider.h"
+#include "StoreOperators.h"
 #include "TemporalSelection.h"
 #include "TileOperators.h"
 #include "TransformToImage.h"
@@ -23,6 +26,39 @@ namespace tasm {
 void VideoManager::createCatalogIfNecessary() {
     if (!std::experimental::filesystem::exists(CatalogConfiguration::CatalogPath()))
         std::experimental::filesystem::create_directory(CatalogConfiguration::CatalogPath());
+}
+
+std::unique_ptr<EncodedTileInformation> VideoManager::selectEncoded(
+        const std::string &video,
+        const std::string &metadataIdentifier,
+        const std::shared_ptr<MetadataSelection> metadataSelection,
+        const std::shared_ptr<TemporalSelection> temporalSelection,
+        const std::shared_ptr<SemanticIndex> semanticIndex,
+        SelectStrategy selectStrategy) {
+    std::shared_ptr<TiledEntry> entry(new TiledEntry(video, metadataIdentifier));
+
+    // Set up scan of a tiled video.
+    std::shared_ptr<TiledVideoManager> tiledVideoManager(new TiledVideoManager(entry));
+    auto tileLocationProvider = std::make_shared<SingleTileLocationProvider>(tiledVideoManager);
+    auto semanticDataManager = std::make_shared<SemanticDataManager>(semanticIndex, metadataIdentifier, metadataSelection, temporalSelection, tiledVideoManager->totalWidth(), tiledVideoManager->totalHeight());
+
+    auto widthHeight = semanticDataManager->maximumWidthAndHeightOfRectangles();
+
+    std::shared_ptr<Operator<TileAndRectangleInformationPtr>> scan;
+    std::shared_ptr<TileLayoutProvider> tileLayoutProvider = tileLocationProvider;
+
+    if (selectStrategy == SelectStrategy::Objects) {
+        scan = std::make_shared<ScanTileAndRectangleInformationOperator>(entry, semanticDataManager, tileLocationProvider);
+    } else {
+        // TODO: handle other selection strategies.
+        assert(false);
+    }
+
+    return std::make_unique<EncodedTileInformation>(
+                widthHeight.first,
+                widthHeight.second,
+                scan
+            );
 }
 
 #if USE_GPU

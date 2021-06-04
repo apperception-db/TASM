@@ -1,4 +1,4 @@
-add_library(_tasm SHARED src/bindings.cpp)
+add_library(_tasm SHARED src/EncodedTiles.cpp src/bindings.cpp)
 
 find_package(Python3 COMPONENTS Development)
 include_directories(${Python3_INCLUDE_DIRS})

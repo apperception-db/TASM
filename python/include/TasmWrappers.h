@@ -4,6 +4,7 @@
 #include "EnvironmentConfiguration.h"
 #include "ImageUtilities.h"
 #include "utilities.h"
+#include "Operator.h"
 #include "Tasm.h"
 #include "Video.h"
 #include <boost/python/numpy.hpp>
@@ -12,6 +13,66 @@ namespace p = boost::python;
 namespace np = boost::python::numpy;
 
 namespace tasm::python {
+
+template <class W, class T>
+class PythonOptional {
+public:
+    PythonOptional(std::optional<T> opt)
+        : opt_(opt)
+    {}
+
+    bool isEmpty() const { return !opt_; }
+
+    W value() const { return W(*opt_); }
+
+private:
+    std::optional<T> opt_;
+};
+
+template<class W, class T>
+class PythonOperator {
+public:
+    PythonOperator(std::shared_ptr<Operator<T>> op)
+        : operator_(op)
+    {}
+
+    bool isComplete() const { return operator_->isComplete(); }
+    PythonOptional<W, T> next() const { return PythonOptional<W, T>(operator_->next()); }
+
+private:
+    std::shared_ptr<Operator<T>> operator_;
+};
+
+class PythonTileAndRectangleInformation {
+public:
+    PythonTileAndRectangleInformation(TileAndRectangleInformationPtr tileAndRectInfo)
+        : infoPtr_(tileAndRectInfo)
+    {}
+
+    const TileInformation &tileInformation() const { return infoPtr_->tileInformation; }
+    const std::list<Rectangle> &rectangles() const { return *(infoPtr_->rectangles); }
+
+private:
+    TileAndRectangleInformationPtr infoPtr_;
+};
+
+class PythonEncodedTileInformation {
+public:
+    PythonEncodedTileInformation(std::shared_ptr<tasm::EncodedTileInformation> encodedTileInformation)
+        : maxObjectWidth_(encodedTileInformation->maxObjectWidth),
+        maxObjectHeight_(encodedTileInformation->maxObjectHeight),
+        scan_(encodedTileInformation->scan)
+    {}
+
+    unsigned int maxObjectWidth() const { return maxObjectWidth_; }
+    unsigned int maxObjectHeight() const { return maxObjectHeight_; }
+    PythonOperator<PythonTileAndRectangleInformation, TileAndRectangleInformationPtr> scan() const { return scan_; }
+
+private:
+    unsigned int maxObjectWidth_;
+    unsigned int maxObjectHeight_;
+    PythonOperator<PythonTileAndRectangleInformation, TileAndRectangleInformationPtr> scan_;
+};
 
 class PythonImage {
 public:
@@ -63,6 +124,15 @@ public:
 
     void addBulkMetadataFromList(boost::python::list metadataInfo) {
         addBulkMetadata(extract<MetadataInfo>(metadataInfo));
+    }
+
+    PythonEncodedTileInformation pythonSelectEncoded(
+            const std::string &video,
+            const std::string &metadataIdentifier,
+            const std::string &label,
+            unsigned int firstFrameInclusive,
+            unsigned int lastFrameExclusive) {
+        return PythonEncodedTileInformation(std::shared_ptr(selectEncoded(video, label, firstFrameInclusive, lastFrameExclusive, metadataIdentifier)));
     }
 
 #if USE_GPU
@@ -159,11 +229,11 @@ public:
 #endif // USE_GPU
 };
 
-PythonTASM *tasmFromWH(const std::string &whDBPath) {
+inline PythonTASM *tasmFromWH(const std::string &whDBPath) {
     return new PythonTASM(SemanticIndex::IndexType::LegacyWH, whDBPath);
 }
 
-void configureEnvironment(const boost::python::dict &kwargs) {
+inline void configureEnvironment(const boost::python::dict &kwargs) {
     std::unordered_map<std::string, std::string> options;
     if (kwargs.contains("default_db_path"))
         options[EnvironmentConfiguration::DefaultLabelsDB] = boost::python::extract<std::string>(kwargs["default_db_path"]);

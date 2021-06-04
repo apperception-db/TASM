@@ -1,17 +1,65 @@
 #ifndef TASM_SCANTILEDVIDEOOPERATOR_H
 #define TASM_SCANTILEDVIDEOOPERATOR_H
 
-#if USE_GPU
-
 #include "Operator.h"
 
 #include "EncodedData.h"
-#include "Rectangle.h"
 #include "SemanticDataManager.h"
+#include "TileInformation.h"
 #include "TileLocationProvider.h"
 #include "StitchContext.h"
 
 namespace tasm {
+
+class ScanTiledVideoOperatorBase {
+public:
+    ScanTiledVideoOperatorBase(
+            std::shared_ptr<TiledEntry> entry,
+            std::shared_ptr<SemanticDataManager> semanticDataManager,
+            std::shared_ptr<TileLocationProvider> tileLocationProvider,
+            bool shouldSortBySize = true)
+        : entry_(entry), semanticDataManager_(semanticDataManager),
+        tileLocationProvider_(tileLocationProvider),
+        totalVideoWidth_(0), totalVideoHeight_(0)
+    {
+        preprocess(shouldSortBySize);
+    }
+
+    virtual ~ScanTiledVideoOperatorBase() = default;
+
+protected:
+    void preprocess(bool shouldSortBySize=true);
+    std::shared_ptr<std::vector<int>> nextGroupOfFramesWithTheSameLayoutAndFromTheSameFile(std::vector<int>::const_iterator &frameIt, std::vector<int>::const_iterator &endIt);
+    std::unique_ptr<std::unordered_map<unsigned int, std::shared_ptr<std::vector<int>>>> filterToTileFramesThatContainObject(std::shared_ptr<std::vector<int>> possibleFrames);
+
+    std::shared_ptr<TiledEntry> entry_;
+    std::shared_ptr<SemanticDataManager> semanticDataManager_;
+    std::shared_ptr<TileLocationProvider> tileLocationProvider_;
+    std::shared_ptr<const TileLayout> currentTileLayout_;
+    std::unique_ptr<std::experimental::filesystem::path> currentTilePath_;
+    unsigned int totalVideoWidth_;
+    unsigned int totalVideoHeight_;
+
+    std::vector<TileInformation> orderedTileInformation_;
+    std::vector<TileInformation>::const_iterator orderedTileInformationIt_;
+};
+
+class ScanTileAndRectangleInformationOperator : public Operator<TileAndRectangleInformationPtr>, public ScanTiledVideoOperatorBase {
+public:
+    ScanTileAndRectangleInformationOperator(
+            std::shared_ptr<TiledEntry> entry,
+            std::shared_ptr<SemanticDataManager> semanticDataManager,
+            std::shared_ptr<TileLocationProvider> tileLocationProvider)
+        : ScanTiledVideoOperatorBase(entry, semanticDataManager, tileLocationProvider, false),
+        isComplete_(false)
+    {}
+
+    bool isComplete() override { return isComplete_; }
+    std::optional<TileAndRectangleInformationPtr> next() override;
+
+private:
+    bool isComplete_;
+};
 
 class ScanTiledVideoOperator : public Operator<CPUEncodedFrameDataPtr> {
 public:
@@ -19,7 +67,8 @@ public:
             std::shared_ptr<TiledEntry> entry,
             std::shared_ptr<SemanticDataManager> semanticDataManager,
             std::shared_ptr<TileLocationProvider> tileLocationProvider,
-            bool shouldReadEntireGOPs = false)
+            bool shouldReadEntireGOPs = false,
+            bool shouldSortBySize = true)
             : isComplete_(false), entry_(entry), semanticDataManager_(semanticDataManager),
             tileLocationProvider_(tileLocationProvider),
             shouldReadEntireGOPs_(shouldReadEntireGOPs),
@@ -29,14 +78,14 @@ public:
             didSignalEOS_(false),
             currentTileNumber_(0), currentTileArea_(0)
     {
-        preprocess();
+        preprocess(shouldSortBySize);
     }
 
     bool isComplete() override { return isComplete_; }
     std::optional<CPUEncodedFrameDataPtr> next() override;
 
 private:
-    void preprocess();
+    void preprocess(bool shouldSortBySize=true);
     void setUpNextEncodedFrameReader();
     std::shared_ptr<std::vector<int>> nextGroupOfFramesWithTheSameLayoutAndFromTheSameFile(std::vector<int>::const_iterator &frameIt, std::vector<int>::const_iterator &endIt);
     std::unique_ptr<std::unordered_map<unsigned int, std::shared_ptr<std::vector<int>>>> filterToTileFramesThatContainObject(std::shared_ptr<std::vector<int>> possibleFrames);
@@ -61,28 +110,6 @@ private:
     unsigned int currentTileNumber_;
     std::unique_ptr<EncodedFrameReader> currentEncodedFrameReader_;
     std::unordered_map<std::string, Configuration> tilePathToConfiguration_;
-
-    struct TileInformation {
-        std::experimental::filesystem::path filename;
-        int tileNumber;
-        unsigned int width;
-        unsigned int height;
-        std::shared_ptr<std::vector<int>> framesToRead;
-        unsigned int frameOffsetInFile;
-        Rectangle tileRect;
-
-        // Considers only dimensions for the purposes of ordering reads.
-        bool operator<(const TileInformation &other) {
-            if (height < other.height)
-                return true;
-            else if (height > other.height)
-                return false;
-            else if (width < other.width)
-                return true;
-            else
-                return false;
-        }
-    };
 
     std::vector<TileInformation> orderedTileInformation_;
     std::vector<TileInformation>::const_iterator orderedTileInformationIt_;
@@ -134,7 +161,5 @@ private:
 };
 
 } // namespace tasm
-
-#endif // USE_GPU
 
 #endif //TASM_SCANTILEDVIDEOOPERATOR_H

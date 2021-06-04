@@ -1,5 +1,3 @@
-#if USE_GPU
-
 #include "ScanTiledVideoOperator.h"
 
 #include "VideoConfiguration.h"
@@ -10,7 +8,7 @@ namespace tasm {
 static const unsigned int MAX_PPS_ID = 64;
 static const unsigned int ALIGNMENT = 32;
 
-void ScanTiledVideoOperator::preprocess() {
+void ScanTiledVideoOperatorBase::preprocess(bool shouldSortBySize) {
     auto frameIt = semanticDataManager_->orderedFrames().cbegin();
     auto end = semanticDataManager_->orderedFrames().cend();
     while (frameIt != end) {
@@ -32,7 +30,106 @@ void ScanTiledVideoOperator::preprocess() {
         }
     }
 
-    std::sort(orderedTileInformation_.begin(), orderedTileInformation_.end());
+    if (shouldSortBySize)
+        std::sort(orderedTileInformation_.begin(), orderedTileInformation_.end());
+    orderedTileInformationIt_ = orderedTileInformation_.begin();
+}
+
+std::shared_ptr<std::vector<int>> ScanTiledVideoOperatorBase::nextGroupOfFramesWithTheSameLayoutAndFromTheSameFile(std::vector<int>::const_iterator &frameIt, std::vector<int>::const_iterator &endIt) {
+    assert(frameIt != endIt);
+
+    auto fakeTileNumber = 0;
+    // Get the configuration and location for the next frame.
+    // While the path is the same, it must have the same configuration.
+    currentTilePath_ = std::make_unique<std::experimental::filesystem::path>(tileLocationProvider_->locationOfTileForFrame(fakeTileNumber, *frameIt));
+    currentTileLayout_ = tileLocationProvider_->tileLayoutForFrame(*frameIt);
+
+    if (!totalVideoWidth_) {
+        assert(!totalVideoHeight_);
+        totalVideoWidth_ = currentTileLayout_->totalWidth();
+        totalVideoHeight_ = currentTileLayout_->totalHeight();
+    }
+
+    auto framesWithSamePathAndConfiguration = std::make_shared<std::vector<int>>();
+    framesWithSamePathAndConfiguration->push_back(*frameIt++);
+    while (frameIt != endIt) {
+        if (tileLocationProvider_->locationOfTileForFrame(fakeTileNumber, *frameIt) == *currentTilePath_)
+            framesWithSamePathAndConfiguration->push_back(*frameIt++);
+        else
+            break;
+    }
+
+    return framesWithSamePathAndConfiguration;
+}
+
+std::unique_ptr<std::unordered_map<unsigned int, std::shared_ptr<std::vector<int>>>> ScanTiledVideoOperatorBase::filterToTileFramesThatContainObject(std::shared_ptr<std::vector<int>> possibleFrames) {
+    auto tileNumberToFrames = std::make_unique<std::unordered_map<unsigned int, std::shared_ptr<std::vector<int>>>>();
+
+    // currentTileLayout is set in nextGroupOfFramesWithTheSameLayoutAndFromTheSameFile().
+    if (currentTileLayout_->numberOfTiles() == 1) {
+        (*tileNumberToFrames)[0] = possibleFrames;
+        return tileNumberToFrames;
+    }
+
+    for (auto i = 0u; i < currentTileLayout_->numberOfTiles(); ++i) {
+        auto tileRect = currentTileLayout_->rectangleForTile(i);
+        if (!tileNumberToFrames->count(i))
+            (*tileNumberToFrames)[i] = std::make_shared<std::vector<int>>();
+        (*tileNumberToFrames)[i]->reserve(possibleFrames->size());
+        for (auto frame = possibleFrames->begin(); frame != possibleFrames->end(); ++frame) {
+            auto &rectanglesForFrame = semanticDataManager_->rectanglesForFrame(*frame);
+            bool anyIntersect = std::any_of(rectanglesForFrame.begin(), rectanglesForFrame.end(), [&](auto &rectangle) {
+                return tileRect.intersects(rectangle);
+            });
+            if (anyIntersect) {
+                (*tileNumberToFrames)[i]->push_back(*frame);
+            }
+        }
+    }
+    return tileNumberToFrames;
+}
+
+std::optional<TileAndRectangleInformationPtr> ScanTileAndRectangleInformationOperator::next() {
+    if (isComplete_)
+        return {};
+
+    if (orderedTileInformationIt_ == orderedTileInformation_.end()) {
+        isComplete_ = true;
+        return {};
+    }
+
+    const auto &tileInfo = *orderedTileInformationIt_;
+    auto minMax = std::minmax_element(tileInfo.framesToRead->begin(), tileInfo.framesToRead->end());
+    auto returnVal = std::make_shared<TileAndRectangleInformation>(tileInfo, semanticDataManager_->rectanglesForFrames(*minMax.first, *minMax.second + 1));
+
+    ++orderedTileInformationIt_;
+    return {returnVal};
+}
+
+void ScanTiledVideoOperator::preprocess(bool shouldSortBySize) {
+    auto frameIt = semanticDataManager_->orderedFrames().cbegin();
+    auto end = semanticDataManager_->orderedFrames().cend();
+    while (frameIt != end) {
+        auto possibleFramesToRead = nextGroupOfFramesWithTheSameLayoutAndFromTheSameFile(frameIt, end);
+        auto tileToFrames = filterToTileFramesThatContainObject(possibleFramesToRead);
+
+        for (auto tileNumberIt = tileToFrames->begin(); tileNumberIt != tileToFrames->end(); ++tileNumberIt) {
+            if (tileNumberIt->second->empty())
+                continue;
+            auto rectangleForTile = currentTileLayout_->rectangleForTile(tileNumberIt->first);
+            orderedTileInformation_.emplace_back<TileInformation>(
+                    {TileFiles::tileFilename(currentTilePath_->parent_path(), tileNumberIt->first),
+                     static_cast<int>(tileNumberIt->first),
+                     rectangleForTile.width,
+                     rectangleForTile.height,
+                     tileNumberIt->second,
+                     tileLocationProvider_->frameOffsetInTileFile(*currentTilePath_),
+                     rectangleForTile});
+        }
+    }
+
+    if (shouldSortBySize)
+        std::sort(orderedTileInformation_.begin(), orderedTileInformation_.end());
     orderedTileInformationIt_ = orderedTileInformation_.begin();
 }
 
@@ -129,9 +226,13 @@ std::optional<CPUEncodedFrameDataPtr> ScanTiledVideoOperator::next() {
         // Flush the decoder.
         if (!currentEncodedFrameReader_) {
             didSignalEOS_ = true;
+#if USE_GPU
             CUVIDSOURCEDATAPACKET packet;
             memset(&packet, 0, sizeof(packet));
             packet.flags = CUVID_PKT_ENDOFSTREAM;
+#else
+            DecodeReaderPacket packet({});
+#endif // not USE_GPU
             Configuration configuration;
             return std::make_shared<CPUEncodedFrameData>(
                     configuration,
@@ -259,9 +360,13 @@ std::optional<CPUEncodedFrameDataPtr> ScanFullFramesFromTiledVideoOperator::next
         // Flush the decoder.
         if (currentEncodedFrameReaders_.empty()) {
             didSignalEOS_ = true;
+#if USE_GPU
             CUVIDSOURCEDATAPACKET packet;
             memset(&packet, 0, sizeof(packet));
             packet.flags = CUVID_PKT_ENDOFSTREAM;
+#else
+            DecodeReaderPacket packet({});
+#endif // not USE_GPU
             Configuration configuration;
             return std::make_shared<CPUEncodedFrameData>(
                     configuration,
@@ -297,5 +402,3 @@ std::unique_ptr<Configuration> ScanFullFramesFromTiledVideoOperator::fullFrameCo
 }
 
 } // namespace tasm
-
-#endif // USE_GPU

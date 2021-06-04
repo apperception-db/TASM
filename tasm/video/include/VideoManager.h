@@ -4,6 +4,7 @@
 #include "GPUContext.h"
 #include "ImageUtilities.h"
 #include "RegretAccumulator.h"
+#include "TileUtilities.h"
 #include "VideoLock.h"
 #include <experimental/filesystem>
 #include <TileConfigurationProvider.h>
@@ -33,6 +34,14 @@ public:
         createCatalogIfNecessary();
     }
 #endif // not USE_GPU
+
+std::unique_ptr<EncodedTileInformation> selectEncoded(
+        const std::string &video,
+        const std::string &metadataIdentifier,
+        const std::shared_ptr<MetadataSelection> metadataSelection,
+        const std::shared_ptr<TemporalSelection> temporalSelection,
+        const std::shared_ptr<SemanticIndex> semanticIndex,
+        SelectStrategy selectStrategy=SelectStrategy::Objects);
 
 #if USE_GPU
     void store(const std::experimental::filesystem::path &path, const std::string &name);
