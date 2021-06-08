@@ -14,17 +14,22 @@ Prototype implementation of TASM, which is a tile-based storage manager video an
 
 # Running the example notebook in the Docker container
 By default, the Docker container opens to the `python/Examples` directory which comes with a notebook that walks through
-the basics of interacting with TASM. 
+the basics of interacting with TASM.
 
-On the machine with an encode-capable GPU (https://developer.nvidia.com/video-encode-and-decode-gpu-support-matrix-new):   
-1. `docker run --rm -it --runtime=nvidia -p 8890:8890 --name tasm tasm/tasm:latest /bin/bash`  
-2. `jupyter notebook --ip 0.0.0.0 --port 8890 --allow-root &` (in the Docker environment)
+On a machine with a GPU:
+1. Tile the video (e.g., cells 5-7 in the `Basics` notebook)
+1. Copy the `labels.db` and `resources/` directory to the machine that will use the tiles 
+
+On the machine with a CPU:   
+1. Place `labels.db` and the `resources/` directory inside `$(pwd)/catalog/`
+1. `docker run --rm -it  -p 8890:8890 --name tasm -v $(pwd)/catalog:/catalog tasm/tasm:latest /bin/bash`  
+1. `jupyter notebook --ip 0.0.0.0 --port 8890 --allow-root &` (in the Docker environment)
  
 On the machine where you want to interact with the notebook
 (e.g., the Docker container is running on a remote machine, but you want to view the notebook locally):  
-- Note: I've only tried this on Mac through XQuartz  
-1. `ssh -X -L 8890:127.0.0.1:8890 <user>@<host>`
-2. Paste the link from the `jupyter notebook` command into a web browser
+1. If the machine where the container is running is remote: `ssh -L 8890:127.0.0.1:8890 <user>@<host>`
+1. Paste the link from the `jupyter notebook` command into a web browser
+1. Open the `Basics-CPU` notebook
 
 # Example usage
 
