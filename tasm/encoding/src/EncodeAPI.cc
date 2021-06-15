@@ -548,6 +548,7 @@ NVENCSTATUS EncodeAPI::NvEncOpenEncodeSessionEx(void* device, NV_ENC_DEVICE_TYPE
     nvStatus = m_pEncodeAPI->nvEncOpenEncodeSessionEx(&openSessionExParams, &encodeSessionHandle);
     if (nvStatus != NV_ENC_SUCCESS)
     {
+        std::cerr << "NV_ENC_ERR_OUT_OF_MEMORY: " << NV_ENC_ERR_OUT_OF_MEMORY << std::endl;
         std::cerr << "nvEncOpenEncodeSessionEx error: " << nvStatus << std::endl;
         assert(0);
     }
