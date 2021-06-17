@@ -31,6 +31,7 @@ struct TileInformation {
     std::string filenameString() const { return filename.string(); }
 };
 
+#if !USE_GPU
 struct TileAndRectangleInformation {
     TileAndRectangleInformation(const TileInformation &tileInformation,
                                 std::unique_ptr<std::list<Rectangle>> rectangles)
@@ -41,6 +42,7 @@ struct TileAndRectangleInformation {
 };
 
 using TileAndRectangleInformationPtr = std::shared_ptr<TileAndRectangleInformation>;
+#endif // !USE_GPU
 
 } // namespace tasm
 

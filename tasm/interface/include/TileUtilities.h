@@ -1,6 +1,7 @@
 #ifndef TASM_TILEUTILITIES_H
 #define TASM_TILEUTILITIES_H
 
+#if !USE_GPU
 #include "Operator.h"
 #include "TileInformation.h"
 
@@ -18,4 +19,5 @@ struct EncodedTileInformation {
 
 } // namespace tasm
 
+#endif // !USE_GPU
 #endif //TASM_TILEUTILITIES_H

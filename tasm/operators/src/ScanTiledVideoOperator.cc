@@ -89,6 +89,7 @@ std::unique_ptr<std::unordered_map<unsigned int, std::shared_ptr<std::vector<int
     return tileNumberToFrames;
 }
 
+#if !USE_GPU
 std::optional<TileAndRectangleInformationPtr> ScanTileAndRectangleInformationOperator::next() {
     if (isComplete_)
         return {};
@@ -105,6 +106,7 @@ std::optional<TileAndRectangleInformationPtr> ScanTileAndRectangleInformationOpe
     ++orderedTileInformationIt_;
     return {returnVal};
 }
+#endif // !USE_GPU
 
 void ScanTiledVideoOperator::preprocess(bool shouldSortBySize) {
     auto frameIt = semanticDataManager_->orderedFrames().cbegin();

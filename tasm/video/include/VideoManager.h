@@ -35,6 +35,15 @@ public:
     }
 #endif // not USE_GPU
 
+#if USE_GPU
+void selectEncoded(
+        const std::string &video,
+        const std::string &metadataIdentifier,
+        const std::shared_ptr<MetadataSelection> metadataSelection,
+        const std::shared_ptr<TemporalSelection> temporalSelection,
+        const std::shared_ptr<SemanticIndex> semanticIndex,
+        SelectStrategy selectStrategy=SelectStrategy::Objects);
+#else
 std::unique_ptr<EncodedTileInformation> selectEncoded(
         const std::string &video,
         const std::string &metadataIdentifier,
@@ -42,6 +51,7 @@ std::unique_ptr<EncodedTileInformation> selectEncoded(
         const std::shared_ptr<TemporalSelection> temporalSelection,
         const std::shared_ptr<SemanticIndex> semanticIndex,
         SelectStrategy selectStrategy=SelectStrategy::Objects);
+#endif // not USE_GPU
 
 #if USE_GPU
     void store(const std::experimental::filesystem::path &path, const std::string &name);

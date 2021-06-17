@@ -33,6 +33,9 @@ public:
 
     virtual void addBulkMetadata(const std::vector<MetadataInfo>&);
 
+#if USE_GPU
+
+#else
     std::unique_ptr<EncodedTileInformation> selectEncoded(
             const std::string &video,
             const std::string &label,
@@ -47,6 +50,7 @@ public:
                 semanticIndex_,
                 SelectStrategy::Objects);
     }
+#endif // not USE_GPU
 
 #if USE_GPU
     virtual void store(const std::string &videoPath, const std::string &savedName) {

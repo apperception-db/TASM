@@ -28,6 +28,63 @@ void VideoManager::createCatalogIfNecessary() {
         std::experimental::filesystem::create_directory(CatalogConfiguration::CatalogPath());
 }
 
+#if USE_GPU
+void VideoManager::selectEncoded(
+        const std::string &video,
+        const std::string &metadataIdentifier,
+        const std::shared_ptr<MetadataSelection> metadataSelection,
+        const std::shared_ptr<TemporalSelection> temporalSelection,
+        const std::shared_ptr<SemanticIndex> semanticIndex,
+        SelectStrategy selectStrategy) {
+    std::shared_ptr<TiledEntry> entry(new TiledEntry(video, metadataIdentifier));
+
+    // Set up scan of a tiled video.
+    std::shared_ptr<TiledVideoManager> tiledVideoManager(new TiledVideoManager(entry));
+    auto tileLocationProvider = std::make_shared<SingleTileLocationProvider>(tiledVideoManager);
+    auto semanticDataManager = std::make_shared<SemanticDataManager>(semanticIndex, metadataIdentifier,
+                                                                     metadataSelection, temporalSelection,
+                                                                     tiledVideoManager->totalWidth(),
+                                                                     tiledVideoManager->totalHeight());
+
+    auto widthHeight = semanticDataManager->maximumWidthAndHeightOfRectangles();
+
+    std::shared_ptr<Operator<CPUEncodedFrameDataPtr>> scan;
+    std::shared_ptr<TileLayoutProvider> tileLayoutProvider = tileLocationProvider;
+    if (selectStrategy == SelectStrategy::Objects) {
+        bool shouldReadEntireGOPs = false;
+        bool shouldSortBySize = false;
+        scan = std::make_shared<ScanTiledVideoOperator>(entry, semanticDataManager, tileLocationProvider, shouldReadEntireGOPs, shouldSortBySize);
+    } else {
+        // TODO: handle other selection strategies.
+        assert(false);
+    }
+
+    // Shared with code in select().
+    // Set up default configuration info.
+    auto maxWidth = tiledVideoManager->largestWidth();
+    auto maxHeight = tiledVideoManager->largestHeight();
+    // Specify largest tile dimensions which are required to successfully reconfigure the decoder.
+    // The maximum dimensions were set based on display dimensions; make sure they are big enough to handle larger coded dimensions.
+    static const unsigned int CodedDimension = 32;
+    if (maxWidth % CodedDimension)
+        maxWidth = (maxWidth / CodedDimension + 1) * CodedDimension;
+    if (maxHeight % CodedDimension)
+        maxHeight = (maxHeight / CodedDimension + 1) * CodedDimension;
+
+    auto configuration = *video::GetConfiguration(tileLocationProvider->locationOfTileForFrame(0, 0));
+    configuration.maxWidth = maxWidth;
+    configuration.maxHeight = maxHeight;
+
+    // Decode tiles containing specified object.
+    std::shared_ptr<GPUDecodeFromCPU> decode(new GPUDecodeFromCPU(scan, configuration, gpuContext_, lock_, maxWidth, maxHeight));
+
+    // Encode cropped video.
+
+    // Accumulate regret for this query.
+    if (videoToRegretAccumulator_.count(video))
+        accumulateRegret(video, semanticDataManager, tileLocationProvider);
+}
+#else
 std::unique_ptr<EncodedTileInformation> VideoManager::selectEncoded(
         const std::string &video,
         const std::string &metadataIdentifier,
@@ -60,6 +117,7 @@ std::unique_ptr<EncodedTileInformation> VideoManager::selectEncoded(
                 scan
             );
 }
+#endif // not USE_GPU
 
 #if USE_GPU
 void VideoManager::store(const std::experimental::filesystem::path &path, const std::string &name) {

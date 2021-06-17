@@ -44,6 +44,7 @@ protected:
     std::vector<TileInformation>::const_iterator orderedTileInformationIt_;
 };
 
+#if !USE_GPU
 class ScanTileAndRectangleInformationOperator : public Operator<TileAndRectangleInformationPtr>, public ScanTiledVideoOperatorBase {
 public:
     ScanTileAndRectangleInformationOperator(
@@ -60,6 +61,7 @@ public:
 private:
     bool isComplete_;
 };
+#endif // !USE_GPU
 
 class ScanTiledVideoOperator : public Operator<CPUEncodedFrameDataPtr> {
 public:

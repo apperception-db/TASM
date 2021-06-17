@@ -5,6 +5,8 @@
 #include "Video.h"
 #include <cassert>
 
+#include "EnvironmentConfiguration.h"
+
 using namespace tasm;
 
 class VideoManagerTestFixture : public testing::Test {
@@ -69,5 +71,28 @@ TEST_F(VideoManagerTestFixture, testAccumulateRegret) {
             videoManager.select(video, metadataIdentifier, secondMetadataSelection, temporalSelection, semanticIndex);
     }
     videoManager.retileVideoBasedOnRegret(video);
+}
+
+TEST_F(VideoManagerTestFixture, testSelectEncoded) {
+    std::unordered_map<std::string, std::string> options;
+    options[EnvironmentConfiguration::DefaultLabelsDB] = "/home/maureen/apperception/TASM-git/catalog/labels.db";
+    options[EnvironmentConfiguration::CatalogPath] = "/home/maureen/apperception/TASM-git/catalog/resources";
+    EnvironmentConfiguration::instance(EnvironmentConfiguration(options));
+
+    std::string video("birds-birds");
+    std::string metadataIdentifier("birds");
+    std::string label("bird");
+
+    auto metadataSelection = std::make_shared<SingleMetadataSelection>(label);
+    auto temporalSelection = std::make_shared<RangeTemporalSelection>(0, 90);
+
+    auto semanticIndex = SemanticIndexFactory::create(SemanticIndex::IndexType::XY, EnvironmentConfiguration::instance().defaultLabelsDatabasePath());
+    VideoManager videoManager;
+    videoManager.selectEncoded(
+            video,
+            metadataIdentifier,
+            metadataSelection,
+            temporalSelection,
+            semanticIndex);
 }
 
