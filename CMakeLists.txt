@@ -4,14 +4,14 @@ cmake_minimum_required(VERSION 3.10)
 # Set the cmake Module path
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
 
-message("USE_CPU = ${USE_CPU}")
-if (!${USE_CPU})
+message("USE_GPU = ${USE_GPU}")
+if (${USE_GPU})
     MESSAGE("not using cpu")
 else()
   message("using cpu")
 endif()
 
-if (!${USE_CPU})
+if (${USE_GPU})
   set(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
   enable_language(CUDA)
 endif()
@@ -43,13 +43,14 @@ set(CMAKE_CXX_FLAGS_DEBUG "-DDEBUG -g3 -rdynamic -Wall -Wextra -Wno-unused-param
 set(CMAKE_CXX_FLAGS_RELEASE "-DNDEBUG -O3 -fvisibility=hidden -Wall  -Wextra -Wno-unused-parameter")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "-O2 -g -DNDEBUG -Wall -Wextra -Wno-unused-parameter")
 set(CMAKE_CXX_FLAGS_COVERAGE "-DDEBUG --coverage -g3 -Wall -Wextra -Wno-unused-parameter")
-if (!${USE_CPU})
+if (${USE_GPU})
+  message("setting GPU flag")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPU")
 endif()
 
 set(TASM_LIB_DEPENDENCIES ${TASM_LIB_DEPENDENCIES} dl pthread stdc++fs)
 
-if (!${USE_CPU})
+if (${USE_GPU})
   set(TASM_LIB_DEPENDENCIES ${TASM_LIB_DEPENDENCIES} nvcuvid)
 
   include(cmake/nvenc.cmake)
@@ -60,7 +61,7 @@ if (!${USE_CPU})
   message("Cuda include: ${CUDA_INCLUDE_DIRS}")
   message("libs: ${CUDA_CUDA_LIBRARY}, ${CUDA_nvcuvenc_LIBRARY}")
   set(TASM_LIB_DEPENDENCIES ${TASM_LIB_DEPENDENCIES} ${CUDA_CUDA_LIBRARY} ${CUDA_nvcuvenc_LIBRARY} /usr/lib/x86_64-linux-gnu/libnvcuvid.so /usr/local/cuda-9.0/lib64/libnvToolsExt.so)
-endif() # !use_cpu
+endif() # use_gpu
 
 find_package(PythonLibs 3)
 include_directories(SYSTEM ${PYTHON_INCLUDE_DIRS})
@@ -94,7 +95,7 @@ file(GLOB TASM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/tasm/*/include")
 
 add_subdirectory(homomorphic_stitching)
 add_subdirectory(tasm)
-add_subdirectory(python)
+#add_subdirectory(python)
 enable_testing()
 add_subdirectory(tasm-test)
 
