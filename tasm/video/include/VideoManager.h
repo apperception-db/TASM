@@ -37,6 +37,7 @@ public:
 
 #if USE_GPU
 void selectEncoded(
+        const std::experimental::filesystem::path &outPath,
         const std::string &video,
         const std::string &metadataIdentifier,
         const std::shared_ptr<MetadataSelection> metadataSelection,

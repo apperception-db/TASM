@@ -10,20 +10,20 @@
 
 namespace tasm {
 
-class StoreVideo : public Operator<CPUEncodedFrameDataPtr> {
+class StoreVideo : public Operator<CPUEncodedFramesBlob> {
 public:
-    StoreVideo(std::shared_ptr<Operator<CPUEncodedFrameDataPtr>> scan,
+    StoreVideo(std::shared_ptr<Operator<CPUEncodedFramesBlob>> scan,
             std::experimental::filesystem::path outputPath)
         : isComplete_(false),
         parent_(scan),
         outputPath_(outputPath),
-        tmpPath_(outputPath.replace_extension(".tmp")),
+        tmpPath_(outputPath.replace_extension(".hevc")),
         outStream_(tmpPath_)
     {}
 
     bool isComplete() override { return isComplete_; }
 
-    std::optional<CPUEncodedFrameDataPtr> next() {
+    std::optional<CPUEncodedFramesBlob> next() {
         if (isComplete_)
             return {};
 
@@ -35,7 +35,7 @@ public:
             return {};
         }
 
-        outStream_.write(reinterpret_cast<const char*>((*encodedData)->packet().payload), (*encodedData)->packet().payload_size);
+        outStream_.write(encodedData->encodedFrames().data(), encodedData->encodedFrames().size());
         return encodedData;
     }
 
@@ -47,7 +47,7 @@ private:
     }
 
     bool isComplete_;
-    std::shared_ptr<Operator<CPUEncodedFrameDataPtr>> parent_;
+    std::shared_ptr<Operator<CPUEncodedFramesBlob>> parent_;
     std::experimental::filesystem::path outputPath_;
     std::experimental::filesystem::path tmpPath_;
     std::ofstream outStream_;

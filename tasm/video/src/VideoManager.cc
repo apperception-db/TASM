@@ -1,5 +1,6 @@
 #include "VideoManager.h"
 
+#include "EncodeCroppedOperator.h"
 #include "ImageUtilities.h"
 #include "MergeTiles.h"
 #include "TileLocationProvider.h"
@@ -30,6 +31,7 @@ void VideoManager::createCatalogIfNecessary() {
 
 #if USE_GPU
 void VideoManager::selectEncoded(
+        const std::experimental::filesystem::path &outPath,
         const std::string &video,
         const std::string &metadataIdentifier,
         const std::shared_ptr<MetadataSelection> metadataSelection,
@@ -45,8 +47,6 @@ void VideoManager::selectEncoded(
                                                                      metadataSelection, temporalSelection,
                                                                      tiledVideoManager->totalWidth(),
                                                                      tiledVideoManager->totalHeight());
-
-    auto widthHeight = semanticDataManager->maximumWidthAndHeightOfRectangles();
 
     std::shared_ptr<Operator<CPUEncodedFrameDataPtr>> scan;
     std::shared_ptr<TileLayoutProvider> tileLayoutProvider = tileLocationProvider;
@@ -78,7 +78,19 @@ void VideoManager::selectEncoded(
     // Decode tiles containing specified object.
     std::shared_ptr<GPUDecodeFromCPU> decode(new GPUDecodeFromCPU(scan, configuration, gpuContext_, lock_, maxWidth, maxHeight));
 
-    // Encode cropped video.
+    // Crop to object and encode.
+    auto widthHeight = semanticDataManager->maximumWidthAndHeightOfRectangles();
+    auto cropAndEncode = std::make_shared<EncodeCroppedOperator>(
+            decode,
+            semanticDataManager,
+            tileLocationProvider,
+            widthHeight.first,
+            widthHeight.second,
+            gpuContext_,
+            lock_);
+    auto store = std::make_shared<StoreVideo>(cropAndEncode, outPath);
+    while (!store->isComplete())
+        store->next();
 
     // Accumulate regret for this query.
     if (videoToRegretAccumulator_.count(video))

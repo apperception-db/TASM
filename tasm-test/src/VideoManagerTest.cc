@@ -89,6 +89,7 @@ TEST_F(VideoManagerTestFixture, testSelectEncoded) {
     auto semanticIndex = SemanticIndexFactory::create(SemanticIndex::IndexType::XY, EnvironmentConfiguration::instance().defaultLabelsDatabasePath());
     VideoManager videoManager;
     videoManager.selectEncoded(
+            "/home/maureen/apperception/TASM/test_output/selected_birds_tiled.mp4",
             video,
             metadataIdentifier,
             metadataSelection,

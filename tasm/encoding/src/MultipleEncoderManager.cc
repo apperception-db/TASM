@@ -23,6 +23,10 @@ void TileEncoder::encodeFrame(Frame &frame, unsigned int top, unsigned int left,
     encodeSession_.Encode(frame, top, left, isKeyframe);
 }
 
+void TileEncoder::encodeFrame(Frame &frame, unsigned int top, unsigned int left, unsigned int height, unsigned int width, bool isKeyframe) {
+    encodeSession_.Encode(frame, top, left, height, width, isKeyframe);
+}
+
 void TileEncoder::flush() {
     encodeSession_.Flush();
 }

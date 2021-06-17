@@ -180,6 +180,57 @@ struct EncodeBuffer
         copy(lock, {lumaPlaneParameters, chromaPlaneParameters});
     }
 
+    void copyCrop(VideoLock &lock, Frame &frame,
+              size_t frame_top, size_t frame_left,
+              size_t frame_height, size_t frame_width,
+              size_t buffer_top=0, size_t buffer_left=0) {
+        auto cudaFrame = dynamic_cast<GPUFrame&>(frame).cuda();
+        //CudaDecodedFrame cudaFrame(frame);
+        CUDA_MEMCPY2D lumaPlaneParameters{
+                srcXInBytes:   frame_left,
+                srcY:          frame_top,
+                srcMemoryType: CU_MEMORYTYPE_DEVICE,
+                srcHost:       nullptr,
+                srcDevice:     cudaFrame->handle(),
+                srcArray:      nullptr,
+                srcPitch:      cudaFrame->pitch(),
+
+                dstXInBytes:   buffer_left,
+                dstY:          buffer_top,
+                dstMemoryType: CU_MEMORYTYPE_DEVICE,
+                dstHost:       nullptr,
+                dstDevice:     static_cast<CUdeviceptr>(input_buffer.NV12devPtr),
+                dstArray:      nullptr,
+                dstPitch:      input_buffer.NV12Stride,
+
+                WidthInBytes:  std::min(input_buffer.width - buffer_left, frame_width),
+                Height:        std::min(input_buffer.height - buffer_top, frame_height) ,
+        };
+
+        CUDA_MEMCPY2D chromaPlaneParameters{
+                srcXInBytes:   frame_left,
+                srcY:          frame.height() + frame_top / 2,
+                srcMemoryType: CU_MEMORYTYPE_DEVICE,
+                srcHost:       nullptr,
+                srcDevice:     cudaFrame->handle(),
+                srcArray:      nullptr,
+                srcPitch:      cudaFrame->pitch(),
+
+                dstXInBytes:   buffer_left,
+                dstY:          input_buffer.height + buffer_top / 2,
+                dstMemoryType: CU_MEMORYTYPE_DEVICE,
+                dstHost:       nullptr,
+                dstDevice:     static_cast<CUdeviceptr>(input_buffer.NV12devPtr),
+                dstArray:      nullptr,
+                dstPitch:      input_buffer.NV12Stride,
+
+                WidthInBytes:  std::min(input_buffer.width - buffer_left, frame_width),
+                Height:        std::min(input_buffer.height - buffer_top, frame_height) / 2
+        };
+
+        copy(lock, {lumaPlaneParameters, chromaPlaneParameters});
+    }
+
     void copy(VideoLock &lock, const CUDA_MEMCPY2D &parameters) {
         CUresult result;
         std::scoped_lock l{lock};

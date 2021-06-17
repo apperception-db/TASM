@@ -42,6 +42,16 @@ public:
         return Encode(buffer, frame.type(), shouldBeKeyframe);
     }
 
+    void Encode(Frame &frame, size_t top, size_t left, size_t height, size_t width, bool shouldBeKeyframe = false) {
+        auto &buffer = GetAvailableBuffer();
+        if(buffer.input_buffer.buffer_format != NV_ENC_BUFFER_FORMAT_NV12_PL)
+            std::cerr << "buffer.input_buffer.buffer_format != NV_ENC_BUFFER_FORMAT_NV12_PL" << std::endl;
+        assert(buffer.input_buffer.buffer_format == NV_ENC_BUFFER_FORMAT_NV12_PL);
+
+        buffer.copyCrop(encoder().lock(), frame, top, left, height, width);
+        return Encode(buffer, frame.type(), shouldBeKeyframe);
+    }
+
     void Encode(std::vector<Frame> &frames, const FrameCopierFunction &copier) {
         return Encode(frames, copier, [](VideoLock&, EncodeBuffer& buffer) -> EncodeBuffer& { return buffer; });
     }

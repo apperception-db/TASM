@@ -67,6 +67,18 @@ private:
 
 using CPUEncodedFrameDataPtr = std::shared_ptr<CPUEncodedFrameData>;
 
+class CPUEncodedFramesBlob {
+public:
+    CPUEncodedFramesBlob(std::unique_ptr<std::vector<char>> encodedFrames)
+        : encodedFrames_(std::move(encodedFrames))
+    {}
+
+    const std::vector<char> &encodedFrames() const { return *encodedFrames_; }
+
+private:
+    std::unique_ptr<std::vector<char>> encodedFrames_;
+};
+
 #if USE_GPU
 
 using GPUFramePtr = std::shared_ptr<DecodedFrame>;
