@@ -42,13 +42,13 @@ public:
         return Encode(buffer, frame.type(), shouldBeKeyframe);
     }
 
-    void Encode(Frame &frame, size_t top, size_t left, size_t height, size_t width, bool shouldBeKeyframe = false) {
+    void Encode(Frame &frame, size_t top, size_t left, size_t height, size_t width, size_t buffer_top=0, size_t buffer_left=0, bool shouldBeKeyframe = false) {
         auto &buffer = GetAvailableBuffer();
         if(buffer.input_buffer.buffer_format != NV_ENC_BUFFER_FORMAT_NV12_PL)
             std::cerr << "buffer.input_buffer.buffer_format != NV_ENC_BUFFER_FORMAT_NV12_PL" << std::endl;
         assert(buffer.input_buffer.buffer_format == NV_ENC_BUFFER_FORMAT_NV12_PL);
 
-        buffer.copyCrop(encoder().lock(), frame, top, left, height, width);
+        buffer.copyCrop(encoder().lock(), frame, top, left, height, width, buffer_top, buffer_left);
         return Encode(buffer, frame.type(), shouldBeKeyframe);
     }
 

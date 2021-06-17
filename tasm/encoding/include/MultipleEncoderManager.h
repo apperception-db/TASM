@@ -22,7 +22,7 @@ public:
     void updateConfiguration(unsigned int newWidth, unsigned int newHeight);
     std::unique_ptr<std::vector<char>> getEncodedFrames();
     void encodeFrame(Frame &frame, unsigned int top, unsigned int left, bool isKeyframe);
-    void encodeFrame(Frame &frame, unsigned int top, unsigned int left, unsigned int height, unsigned int width, bool isKeyframe);
+    void encodeFrame(Frame &frame, unsigned int top, unsigned int left, unsigned int height, unsigned int width, unsigned int bufferTop, unsigned int bufferLeft, bool isKeyframe);
     void flush();
 
 private:

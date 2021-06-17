@@ -184,6 +184,16 @@ struct EncodeBuffer
               size_t frame_top, size_t frame_left,
               size_t frame_height, size_t frame_width,
               size_t buffer_top=0, size_t buffer_left=0) {
+        // First, set frame to black by setting luma plane to 0 and chroma plane to 128.
+        CUresult status = cuMemsetD2D8(static_cast<CUdeviceptr>(input_buffer.NV12devPtr), input_buffer.NV12Stride, 0, input_buffer.width, input_buffer.height);
+        if (status != CUDA_SUCCESS) {
+            std::cerr << "Failed to set luma plane to black with status: " << status << std::endl;
+        }
+        status = cuMemsetD2D8(static_cast<CUdeviceptr>(input_buffer.NV12devPtr) + input_buffer.NV12Stride * input_buffer.height, input_buffer.NV12Stride, 128, input_buffer.width, input_buffer.height / 2);
+        if (status != CUDA_SUCCESS) {
+            std::cerr << "Failed to set chroma plane to black with status: " << status << std::endl;
+        }
+
         auto cudaFrame = dynamic_cast<GPUFrame&>(frame).cuda();
         //CudaDecodedFrame cudaFrame(frame);
         CUDA_MEMCPY2D lumaPlaneParameters{

@@ -25,24 +25,24 @@ public:
         : parent_(parent),
             semanticDataManager_(semanticDataManager),
             tileLayoutProvider_(tileLayoutProvider),
-            isComplete_(false)
+            isComplete_(false),
+            frameHeight_(std::max(maxHeight, 160u)),
+            frameWidth_(std::max(maxWidth, 256u)),
+            numObjects_(0)
     {
         auto config = parent_->configuration();
-        maxWidth = std::max(maxWidth, 256u);
-        maxHeight = std::max(maxHeight, 160u);
-        config.displayWidth = maxWidth;
-        config.displayHeight = maxHeight;
-        config.maxWidth = maxWidth;
-        config.maxHeight = maxHeight;
-        config.codedWidth = maxWidth % 2 ? maxWidth + 1 : maxWidth;
-        config.codedHeight = maxHeight % 2 ? maxHeight + 1 : maxHeight;
+        config.displayWidth = frameWidth_;
+        config.displayHeight = frameHeight_;
+        config.maxWidth = frameWidth_;
+        config.maxHeight = frameHeight_;
+        config.codedWidth = frameWidth_ % 2 ? frameWidth_ + 1 : frameWidth_;
+        config.codedHeight = frameHeight_ % 2 ? frameHeight_ + 1 : frameHeight_;
 
         auto layoutDuration = 30u;
         encoder_ = std::make_unique<TileEncoder>(
                 EncodeConfiguration(config, NV_ENC_HEVC, layoutDuration),
                 *context,
                 *lock);
-        std::cout << "here" << std::endl;
     }
 
     bool isComplete() override { return isComplete_; }
@@ -53,6 +53,9 @@ private:
     std::shared_ptr<SemanticDataManager> semanticDataManager_;
     std::shared_ptr<TileLayoutProvider> tileLayoutProvider_;
     bool isComplete_;
+    unsigned int frameHeight_;
+    unsigned int frameWidth_;
+    unsigned int numObjects_;
 
     std::unique_ptr<TileEncoder> encoder_;
 };

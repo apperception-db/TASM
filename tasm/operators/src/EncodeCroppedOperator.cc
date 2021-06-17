@@ -20,6 +20,8 @@ std::optional<CPUEncodedFramesBlob> EncodeCroppedOperator::next() {
 
     auto decodedData = parent_->next();
     if (parent_->isComplete()) {
+        std::cout << "Number of objects: " << numObjects_ << std::endl;
+
         assert(!decodedData.has_value());
         isComplete_ = true;
         encoder_->flush();
@@ -42,13 +44,18 @@ std::optional<CPUEncodedFramesBlob> EncodeCroppedOperator::next() {
             if (!boundingBox.intersects(tileRect))
                 continue;
 
+            ++numObjects_;
+
             auto overlappingRect = tileRect.overlappingRectangle(boundingBox);
             // TODO: Migrate support for objects across tiles.
             assert(overlappingRect == boundingBox);
             auto offsetIntoTile = topAndLeftOffsets(boundingBox, tileRect);
 
+            auto yOffsetIntoFrame = (frameHeight_ - boundingBox.height) / 2;
+            auto xOffsetIntoFrame = (frameWidth_ - boundingBox.width) / 2;
+
             std::cout << "Found object on frame " << frameNumber << ", tile " << tileNumber << std::endl;
-            encoder_->encodeFrame(*frame, offsetIntoTile.first, offsetIntoTile.second, overlappingRect.height, overlappingRect.height, false);
+            encoder_->encodeFrame(*frame, offsetIntoTile.first, offsetIntoTile.second, overlappingRect.height, overlappingRect.height, yOffsetIntoFrame, xOffsetIntoFrame, false);
         }
     }
 
