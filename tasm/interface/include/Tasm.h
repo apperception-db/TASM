@@ -34,7 +34,22 @@ public:
     virtual void addBulkMetadata(const std::vector<MetadataInfo>&);
 
 #if USE_GPU
-
+    void selectEncoded(
+            const std::experimental::filesystem::path &outPath,
+            const std::string &video,
+            const std::string &label,
+            unsigned int firstFrameInclusive,
+            unsigned int lastFrameExclusive,
+            const std::string &metadataIdentifier = "") {
+        videoManager_.selectEncoded(
+                outPath,
+                video,
+                metadataIdentifier.length() ? metadataIdentifier : video,
+                std::make_shared<SingleMetadataSelection>(label),
+                std::make_shared<RangeTemporalSelection>(firstFrameInclusive, lastFrameExclusive),
+                semanticIndex_,
+                SelectStrategy::Objects);
+    }
 #else
     std::unique_ptr<EncodedTileInformation> selectEncoded(
             const std::string &video,

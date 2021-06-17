@@ -14,6 +14,7 @@ namespace np = boost::python::numpy;
 
 namespace tasm::python {
 
+#if !USE_GPU
 template <class W, class T>
 class PythonOptional {
 public:
@@ -73,6 +74,7 @@ private:
     unsigned int maxObjectHeight_;
     PythonOperator<PythonTileAndRectangleInformation, TileAndRectangleInformationPtr> scan_;
 };
+#endif // !USE_GPU
 
 class PythonImage {
 public:
@@ -126,14 +128,27 @@ public:
         addBulkMetadata(extract<MetadataInfo>(metadataInfo));
     }
 
+#if USE_GPU
+    void pythonSelectEncoded(
+            const std::string &outPath,
+            const std::string &video,
+            const std::string &metadataIdentifier,
+            const std::string &label,
+            unsigned int firstFrameInclusive,
+            unsigned int lastFrameExclusive) {
+        selectEncoded(outPath, video, label, firstFrameInclusive, lastFrameExclusive, metadataIdentifier);
+    }
+#else
     PythonEncodedTileInformation pythonSelectEncoded(
             const std::string &video,
             const std::string &metadataIdentifier,
             const std::string &label,
             unsigned int firstFrameInclusive,
             unsigned int lastFrameExclusive) {
+
         return PythonEncodedTileInformation(std::shared_ptr(selectEncoded(video, label, firstFrameInclusive, lastFrameExclusive, metadataIdentifier)));
     }
+#endif // not USE_GPU
 
 #if USE_GPU
     void pythonStoreWithNonUniformLayout(const std::string &videoPath, const std::string &savedName, const std::string &metadataIdentifier, const std::string &labelToTileAround) {

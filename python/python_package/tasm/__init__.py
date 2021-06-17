@@ -37,7 +37,7 @@ def _get_video_ff_byte_array(video_file: str, width, height, max_frame):
     )
     return video
 
-def get_video_roi(self, output_path, video_name, metadata_identifier, label, first_frame_inclusive, last_frame_exclusive):
+def get_video_roi_cpu(self, output_path, video_name, metadata_identifier, label, first_frame_inclusive, last_frame_exclusive):
     info = self.select_encoded(video_name, metadata_identifier, label, first_frame_inclusive, last_frame_exclusive)
 
     # TODO: don't hard code fps
@@ -96,4 +96,4 @@ def get_video_roi(self, output_path, video_name, metadata_identifier, label, fir
 
     vid_writer.release()
 
-TASM.get_video_roi = get_video_roi
+TASM.get_video_roi_cpu = get_video_roi_cpu

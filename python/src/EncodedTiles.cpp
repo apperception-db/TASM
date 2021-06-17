@@ -1,3 +1,5 @@
+#if !USE_GPU
+
 #include <boost/python.hpp>
 #include <boost/python/to_python_converter.hpp>
 
@@ -49,3 +51,5 @@ void export_EncodedTileInformation() {
         .def("is_empty", &tasm::python::PythonOptional<tasm::python::PythonTileAndRectangleInformation, std::shared_ptr<tasm::TileAndRectangleInformation>>::isEmpty)
         .def("value", &tasm::python::PythonOptional<tasm::python::PythonTileAndRectangleInformation, std::shared_ptr<tasm::TileAndRectangleInformation>>::value, return_value_policy<return_by_value>());
 }
+
+#endif // !USE_GPU

@@ -54,7 +54,6 @@ std::optional<CPUEncodedFramesBlob> EncodeCroppedOperator::next() {
             auto yOffsetIntoFrame = (frameHeight_ - boundingBox.height) / 2;
             auto xOffsetIntoFrame = (frameWidth_ - boundingBox.width) / 2;
 
-            std::cout << "Found object on frame " << frameNumber << ", tile " << tileNumber << std::endl;
             encoder_->encodeFrame(*frame, offsetIntoTile.first, offsetIntoTile.second, overlappingRect.height, overlappingRect.height, yOffsetIntoFrame, xOffsetIntoFrame, false);
         }
     }

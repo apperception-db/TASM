@@ -46,6 +46,7 @@ set(CMAKE_CXX_FLAGS_COVERAGE "-DDEBUG --coverage -g3 -Wall -Wextra -Wno-unused-p
 if (${USE_GPU})
   message("setting GPU flag")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DUSE_GPU")
+  set(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -DUSE_GPU")
 endif()
 
 set(TASM_LIB_DEPENDENCIES ${TASM_LIB_DEPENDENCIES} dl pthread stdc++fs)
@@ -95,7 +96,7 @@ file(GLOB TASM_INCLUDE_DIRS "${PROJECT_SOURCE_DIR}/tasm/*/include")
 
 add_subdirectory(homomorphic_stitching)
 add_subdirectory(tasm)
-#add_subdirectory(python)
+add_subdirectory(python)
 enable_testing()
 add_subdirectory(tasm-test)
 

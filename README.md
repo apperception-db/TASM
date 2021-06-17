@@ -21,6 +21,8 @@ On a machine with a GPU:
 1. Copy the `labels.db` and `resources/` directory to the machine that will use the tiles 
 
 On the machine with a CPU:   
+docker run --rm -it --runtime=nvidia --gpus=all -p 8890:8890 -v $(pwd)/test_output:/test_output -v $(pwd)/catalog:/catalog --name tasm tasm/tasm:latest /bin/bash
+
 1. Place `labels.db` and the `resources/` directory inside `$(pwd)/catalog/`
 1. `docker run --rm -it  -p 8890:8890 --name tasm -v $(pwd)/catalog:/catalog tasm/tasm:latest /bin/bash`  
 1. `jupyter notebook --ip 0.0.0.0 --port 8890 --allow-root &` (in the Docker environment)

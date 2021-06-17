@@ -73,7 +73,7 @@ RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 100 --slave /u
     ln -s /usr/bin/g++-6 /usr/local/cuda/bin/g++6
 
 RUN python3 -m pip install --upgrade pip && \
-    python3 -m pip install setuptools wheel jupyter notebook opencv-python pandas numpy matplotlib && \
+    python3 -m pip install setuptools wheel jupyter notebook opencv-python pandas numpy matplotlib ffmpeg-python && \
     python3 -m pip install --upgrade nbconvert
 
 # Install boost python
