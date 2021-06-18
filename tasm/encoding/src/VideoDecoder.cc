@@ -97,9 +97,9 @@ CUVIDEOFORMAT VideoDecoder::FormatFromCreateInfo(CUVIDDECODECREATEINFO createInf
 }
 
 void VideoDecoder::preallocateArraysForDecodedFrames(unsigned int largestWidth, unsigned int largestHeight) {
-    auto codedDim = 32;
-    assert(!(largestWidth % codedDim));
-    assert(!(largestHeight % codedDim));
+//    auto codedDim = 32;
+//    assert(!(largestWidth % codedDim));
+//    assert(!(largestHeight % codedDim));
 
     preallocatedFrameArrays_.resize(NUMBER_OF_PREALLOCATED_FRAMES);
     heightOfPreallocatedFrameArrays_ = largestHeight * 3 / 2;

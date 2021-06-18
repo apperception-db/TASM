@@ -77,6 +77,16 @@ TEST_F(TasmTestFixture, testTileElFuente1) {
     tasm.storeWithNonUniformLayout("/home/maureen/NFLX_dataset/ElFuente1_hevc.mp4", "elfuente1-not-forced", "elfuente1", "person", false);
 }
 
+TEST_F(TasmTestFixture, testStoreTraffic) {
+    std::unordered_map<std::string, std::string> options;
+    options[EnvironmentConfiguration::DefaultLabelsDB] = "/home/maureen/apperception/data/catalog/labels.db";
+    options[EnvironmentConfiguration::CatalogPath] = "/home/maureen/apperception/data/resources-test";
+    EnvironmentConfiguration::instance(EnvironmentConfiguration(options));
+
+    tasm::TASM tasm;
+    tasm.store("/home/maureen/apperception/data/traffic-001.mp4", "traffic-001");
+}
+
 TEST_F(TasmTestFixture, testSelectBird) {
     tasm::TASM tasm(SemanticIndex::IndexType::InMemory);
     auto selection = tasm.select("birdsincage-bird", "bird", "birdsincage");
