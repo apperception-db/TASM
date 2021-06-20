@@ -30,13 +30,16 @@ public:
             frameWidth_(std::max(maxWidth, 256u)),
             numObjects_(0)
     {
+        frameWidth_ = frameWidth_ % 2 ? frameWidth_ + 1 : frameWidth_;
+        frameHeight_ = frameHeight_ % 2 ? frameHeight_ + 1 : frameHeight_;
+
         auto config = parent_->configuration();
         config.displayWidth = frameWidth_;
         config.displayHeight = frameHeight_;
         config.maxWidth = frameWidth_;
         config.maxHeight = frameHeight_;
-        config.codedWidth = frameWidth_ % 2 ? frameWidth_ + 1 : frameWidth_;
-        config.codedHeight = frameHeight_ % 2 ? frameHeight_ + 1 : frameHeight_;
+        config.codedWidth = frameWidth_;
+        config.codedHeight = frameHeight_;
 
         auto layoutDuration = 30u;
         encoder_ = std::make_unique<TileEncoder>(

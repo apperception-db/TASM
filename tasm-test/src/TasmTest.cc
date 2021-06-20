@@ -84,7 +84,14 @@ TEST_F(TasmTestFixture, testStoreTraffic) {
     EnvironmentConfiguration::instance(EnvironmentConfiguration(options));
 
     tasm::TASM tasm;
-    tasm.store("/home/maureen/apperception/data/traffic-001.mp4", "traffic-001");
+//    tasm.store("/home/maureen/apperception/data/traffic-001.mp4", "traffic-001");
+    tasm.selectEncoded(
+            "/home/maureen/apperception/data/out_videos/traffic-car-67.mp4",
+            "traffic-001",
+            "car-2",
+            0,
+            54000,
+            "traffic-001");
 }
 
 TEST_F(TasmTestFixture, testSelectBird) {
